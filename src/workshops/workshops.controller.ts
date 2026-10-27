@@ -25,13 +25,13 @@ export class WorkshopsController {
   constructor(private readonly workshops: WorkshopsService) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   list(@Query() query: PaginationQueryDto) {
     return this.workshops.list(query);
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   get(@Param('id', ParseUUIDPipe) id: string) {
     return this.workshops.get(id);
   }

@@ -25,13 +25,13 @@ export class MechanicsController {
   constructor(private readonly mechanics: MechanicsService) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   list(@Query() query: ListMechanicsDto) {
     return this.mechanics.list(query);
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   get(@Param('id', ParseUUIDPipe) id: string) {
     return this.mechanics.get(id);
   }

@@ -1,9 +1,10 @@
 # Seguridad
 
-- Contraseñas con Argon2; no se almacenan ni devuelven en texto plano.
+- Las contraseñas nuevas se almacenan con bcrypt y costo 12; nunca se devuelven en respuestas.
+- Los hashes Argon2 existentes se verifican en el login y se rehashean como bcrypt al autenticarse correctamente. Se conserva temporalmente la dependencia Argon2 hasta migrar todas las cuentas.
 - El registro público fuerza el rol `TECHNICIAN`; el primer administrador se crea con `npm run seed`.
 - JWT con secreto y expiración configurables. La estrategia valida firma/expiración y vuelve a leer usuario, rol y mecánico activo desde PostgreSQL.
-- Guards globales de autenticación y roles; integración aislada con API Key comparada en tiempo constante.
+- Guards globales de autenticación; los únicos roles son `ADMIN` y `TECHNICIAN`. La identidad y el rol se recargan desde PostgreSQL, por lo que un rol incluido en el JWT no concede privilegios.
 - Login y registro limitados a 10 intentos por minuto y dirección IP; el exceso responde `429`.
 - DTO estrictos con `whitelist`, `forbidNonWhitelisted` y transformación.
 - Helmet, CORS configurado, compresión y errores sin SQL, stack traces ni secretos.

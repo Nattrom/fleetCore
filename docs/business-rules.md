@@ -32,6 +32,5 @@ Al comenzar una intervención, el vehículo pasa a `IN_MAINTENANCE`. Al completa
 ## Permisos
 
 - `ADMIN`: administra recursos, usuarios y mantenimientos.
-- `MANAGER`: consulta y supervisa recursos e historiales, sin permisos administrativos de escritura.
 - `TECHNICIAN`: consulta y modifica únicamente mantenimientos asignados a su identidad; solo puede efectuar transiciones válidas.
 - Integraciones: acceso independiente mediante `x-api-key`.

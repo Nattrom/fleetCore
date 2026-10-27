@@ -36,7 +36,7 @@ export class MaintenancesController {
   }
 
   @Get('active')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIAN)
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
   active(
     @Query() query: PaginationQueryDto,
     @CurrentUser() user: AuthenticatedUser,
@@ -54,7 +54,7 @@ export class MaintenancesController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIAN)
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
   list(
     @Query() query: ListMaintenancesDto,
     @CurrentUser() user: AuthenticatedUser,
@@ -63,7 +63,7 @@ export class MaintenancesController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIAN)
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
   get(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
@@ -108,7 +108,7 @@ export class MaintenanceHistoryController {
   constructor(private readonly maintenances: MaintenancesService) {}
 
   @Get('vehicles/:id/maintenances')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   forVehicle(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: PaginationQueryDto,
@@ -117,7 +117,7 @@ export class MaintenanceHistoryController {
   }
 
   @Get('mechanics/:id/maintenances')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TECHNICIAN)
+  @Roles(UserRole.ADMIN, UserRole.TECHNICIAN)
   forMechanic(
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: PaginationQueryDto,

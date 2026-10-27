@@ -17,7 +17,7 @@ describe('MechanicsService', () => {
     const users = {
       findOne: jest.fn().mockResolvedValue({
         id: 'user-id',
-        role: UserRole.MANAGER,
+        role: UserRole.ADMIN,
         isActive: true,
       }),
     };

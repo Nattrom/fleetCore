@@ -8,7 +8,7 @@ npm run test:watch
 npm run test:cov -- --runInBand
 ```
 
-Jest exige globalmente al menos 40% de líneas y sentencias, y 35% de funciones y ramas. Las pruebas cubren autenticación/Argon2, guards, filtro, interceptor, auditoría, integración, recursos, mantenimiento y transiciones.
+Jest exige globalmente al menos 40% de líneas y sentencias, y 35% de funciones y ramas. Las pruebas cubren autenticación/bcrypt, transición de hashes Argon2, autorización por rol, filtro, interceptor, auditoría, integración, recursos, mantenimiento y transiciones.
 
 ## E2E PostgreSQL
 
