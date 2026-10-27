@@ -25,6 +25,8 @@ Vehículo, mecánico y taller tienen relación uno-a-muchos con mantenimientos. 
 
 La extensión PostgreSQL `btree_gist` respalda la restricción de agenda. El driver puede habilitar `uuid-ossp` para generación de UUID.
 
+La migración `1761562000000` limita el enum a `ADMIN` y `TECHNICIAN`. Las cuentas que tenían rol `MANAGER` se conservan como `TECHNICIAN` inactivas; una tabla auxiliar conserva su rol/estado anterior para que el `down` pueda restaurarlos. No se eliminan cuentas. Un administrador debe revisar y reactivar explícitamente cada cuenta si corresponde. No reviertas la migración en producción sin valorar que se volverá a habilitar el rol anterior.
+
 ## Migraciones
 
 ```bash

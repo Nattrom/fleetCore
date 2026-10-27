@@ -77,22 +77,23 @@ La especificación OpenAPI está en [`http://localhost:3000/api/docs`](http://lo
 ## Autenticación, roles y respuestas
 
 - `POST /auth/register`: registro público, siempre crea rol `TECHNICIAN`.
-- `POST /auth/login`: verifica Argon2 y devuelve JWT.
+- `POST /auth/login`: verifica bcrypt (y migra hashes Argon2 heredados) y devuelve JWT.
 - `GET /auth/profile`: perfil del JWT validado contra el usuario activo en PostgreSQL.
-- Roles: `ADMIN`, `TECHNICIAN` y `MANAGER`.
+- Roles admitidos: `ADMIN` y `TECHNICIAN`.
 - Integraciones: `x-api-key` configurada en `API_KEYS`.
 - Las respuestas exitosas usan `{ success, statusCode, data, timestamp }`; los errores incluyen `{ success:false, statusCode, message, path, timestamp }`.
 
 Los usuarios y claves de demostración son exclusivamente para desarrollo:
 
-| Rol           | Usuario                   | Contraseña              |
-| ------------- | ------------------------- | ----------------------- |
-| Administrador | `admin@fleetcore.local`   | `FleetCoreAdmin!2026`   |
-| Técnico 1     | `tech1@fleetcore.local`   | `FleetCoreTech!2026`    |
-| Técnico 2     | `tech2@fleetcore.local`   | `FleetCoreTech!2026`    |
-| Gerente       | `manager@fleetcore.local` | `FleetCoreManager!2026` |
+| Rol           | Usuario                 | Contraseña            |
+| ------------- | ----------------------- | --------------------- |
+| Administrador | `admin@fleetcore.local` | `FleetCoreAdmin!2026` |
+| Técnico 1     | `tech1@fleetcore.local` | `FleetCoreTech!2026`  |
+| Técnico 2     | `tech2@fleetcore.local` | `FleetCoreTech!2026`  |
 
 Las claves API de muestra son `demo-key-partner-1` y `demo-key-partner-2`. Sustituye todos estos valores antes de desplegar. La configuración de producción rechaza el secreto JWT de ejemplo, CORS `*` y API Keys que empiecen por `demo-`.
+
+Las contraseñas nuevas usan bcrypt con costo 12. Las contraseñas históricas Argon2 se verifican durante el inicio de sesión y se convierten a bcrypt tras una autenticación correcta, sin invalidarlas. Tras migrar todos los hashes Argon2 y comprobar que no quedan usuarios pendientes, se podrá retirar la compatibilidad Argon2 y su dependencia.
 
 ## Docker Compose
 

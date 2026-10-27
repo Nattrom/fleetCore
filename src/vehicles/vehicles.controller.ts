@@ -25,19 +25,19 @@ export class VehiclesController {
   constructor(private readonly vehicles: VehiclesService) {}
 
   @Get('plate/:plate')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   getByPlate(@Param('plate') plate: string) {
     return this.vehicles.getByPlate(plate);
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   list(@Query() query: ListVehiclesDto) {
     return this.vehicles.list(query);
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   get(@Param('id', ParseUUIDPipe) id: string) {
     return this.vehicles.get(id);
   }

@@ -1,8 +1,9 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { jest } from '@jest/globals';
-import * as argon2 from 'argon2';
+import * as bcrypt from 'bcrypt';
 import { DataSource, Repository } from 'typeorm';
 import { AuditService } from '../audit/audit.service.js';
+import { PasswordHasherService } from '../common/security/password-hasher.service.js';
 import { UserRole } from '../common/enums/index.js';
 import { User } from './entities/user.entity.js';
 import { UsersService } from './users.service.js';
@@ -39,6 +40,7 @@ describe('UsersService', () => {
       users as unknown as Repository<User>,
       dataSource as unknown as DataSource,
       audit as unknown as AuditService,
+      new PasswordHasherService(),
     );
   });
 
@@ -73,7 +75,7 @@ describe('UsersService', () => {
         name: ' New User ',
         email: ' New@Example.com ',
         password: 'a-strong-password',
-        role: UserRole.MANAGER,
+        role: UserRole.TECHNICIAN,
       },
       'admin-id',
     );
@@ -81,7 +83,7 @@ describe('UsersService', () => {
     const saved = users.save.mock.calls[0][0] as User;
     expect(saved.name).toBe('New User');
     expect(saved.email).toBe('new@example.com');
-    expect(await argon2.verify(saved.passwordHash, 'a-strong-password')).toBe(
+    expect(await bcrypt.compare('a-strong-password', saved.passwordHash)).toBe(
       true,
     );
     expect(result).not.toHaveProperty('passwordHash');

@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import * as argon2 from 'argon2';
 import { QueryFailedError } from 'typeorm';
 import { UserRole } from '../common/enums/index.js';
+import { PasswordHasherService } from '../common/security/password-hasher.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import { User } from '../users/entities/user.entity.js';
 import { UsersService } from '../users/users.service.js';
@@ -21,6 +21,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly audit: AuditService,
+    private readonly passwords: PasswordHasherService,
   ) {}
 
   async register(
@@ -36,7 +37,7 @@ export class AuthService {
       user = await this.users.create({
         name: dto.name.trim(),
         email,
-        passwordHash: await argon2.hash(dto.password),
+        passwordHash: await this.passwords.hash(dto.password),
         role: UserRole.TECHNICIAN,
       });
     } catch (error) {
@@ -64,11 +65,21 @@ export class AuthService {
     user: { id: string; name: string; email: string; role: UserRole };
   }> {
     const user = await this.users.findByEmail(dto.email);
-    if (
-      !user?.isActive ||
-      !(await argon2.verify(user.passwordHash, dto.password))
-    ) {
+    if (!user?.isActive) {
       throw new UnauthorizedException('Correo o contraseña incorrectos');
+    }
+    const verification = await this.passwords.verifyAndUpgrade(
+      user.passwordHash,
+      dto.password,
+    );
+    if (!verification.valid) {
+      throw new UnauthorizedException('Correo o contraseña incorrectos');
+    }
+    if (verification.replacementHash) {
+      await this.users.updatePasswordHash(
+        user.id,
+        verification.replacementHash,
+      );
     }
 
     const expiresIn = this.config.getOrThrow<string>(
