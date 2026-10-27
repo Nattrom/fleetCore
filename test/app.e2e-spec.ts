@@ -180,4 +180,19 @@ describe('FleetCore API (e2e)', () => {
     expect(updatedVehicle.body.data.status).toBe('AVAILABLE');
     expect(updatedVehicle.body.data.mileage).toBe(initialMileage + 100);
   });
+
+  it('rate limits repeated authentication attempts from one client', async () => {
+    const statuses: number[] = [];
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: `unknown-${attempt}@fleetcore.test`,
+          password: 'incorrect-password',
+        });
+      statuses.push(response.status);
+    }
+
+    expect(statuses).toEqual([401, 401, 401, 401, 401, 429]);
+  });
 });

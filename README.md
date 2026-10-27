@@ -1,114 +1,133 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# FleetCore API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST para administrar vehículos, mecánicos, talleres y mantenimientos de flota. La aplicación está construida con NestJS, TypeScript estricto, PostgreSQL y TypeORM.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Requisitos
 
-## Description
+- Node.js 22 LTS y npm.
+- PostgreSQL accesible en `localhost:5435` (o `127.0.0.1:5435`).
+- Docker Compose, opcional para ejecutar PostgreSQL y la API en contenedores.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+La configuración local solicitada es:
 
-## Project setup
+| Parámetro     | Valor       |
+| ------------- | ----------- |
+| Host          | `localhost` |
+| Puerto        | `5435`      |
+| Usuario       | `postgres`  |
+| Contraseña    | `postgres`  |
+| Base de datos | `fleetcore` |
+
+No se utiliza el servicio PostgreSQL del puerto `5432` para la ejecución local.
+
+## Instalación y configuración
 
 ```bash
-$ npm install
+npm ci
 ```
 
-## Compile and run the project
+Si todavía no existe `.env`, copia `.env.example` y revisa sus valores. **No sobrescribas un `.env` existente**, porque puede contener configuración local.
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+Configura como mínimo `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET` y `API_KEYS`. El archivo `.env` está excluido de Git.
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run migration:run
+npm run seed
+npm run start:dev
 ```
 
-## Deployment
+La API queda disponible en `http://localhost:3000`. Las migraciones desactivan `synchronize` y son el único mecanismo para modificar el esquema.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Comandos
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Comando                                                        | Propósito                                            |
+| -------------------------------------------------------------- | ---------------------------------------------------- |
+| `npm run start:dev`                                            | Desarrollo con recarga                               |
+| `npm run build`                                                | Compilación de producción                            |
+| `npm run start:prod`                                           | Ejecutar `dist/main.js`                              |
+| `npm run migration:show`                                       | Ver migraciones pendientes/aplicadas                 |
+| `npm run migration:run`                                        | Compilar y aplicar migraciones                       |
+| `npm run migration:revert`                                     | Revertir la última migración                         |
+| `npm run migration:create -- src/database/migrations/Nombre`   | Crear una migración vacía                            |
+| `npm run migration:generate -- src/database/migrations/Nombre` | Generar una migración comparando entidades y esquema |
+| `npm run seed`                                                 | Cargar datos de demostración idempotentemente        |
+| `npm test -- --runInBand`                                      | Pruebas unitarias                                    |
+| `npm run test:watch`                                           | Pruebas en modo observación                          |
+| `npm run test:cov -- --runInBand`                              | Pruebas y umbral de cobertura                        |
+| `npm run test:e2e -- --runInBand`                              | Migrar, sembrar y ejecutar e2e en `fleetcore_test`   |
+| `npm run lint`                                                 | ESLint                                               |
+| `npx prettier --check "src/**/*.ts" "test/**/*.ts"`            | Verificar formato                                    |
+
+Para crear el esquema antes de ejecutar las pruebas e2e, crea una base separada:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+PGPASSWORD=postgres createdb -h 127.0.0.1 -p 5435 -U postgres fleetcore_test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+El comando e2e **solo** apunta a `fleetcore_test`; nunca elimina datos y no ejecuta pruebas destructivas contra `fleetcore`.
 
-## Observability
+## Swagger
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+La especificación OpenAPI está en [`http://localhost:3000/api/docs`](http://localhost:3000/api/docs). Incluye esquemas de DTO, autenticación Bearer y `x-api-key`.
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+## Autenticación, roles y respuestas
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+- `POST /auth/register`: registro público, siempre crea rol `TECHNICIAN`.
+- `POST /auth/login`: verifica Argon2 y devuelve JWT.
+- `GET /auth/profile`: perfil del JWT validado contra el usuario activo en PostgreSQL.
+- Roles: `ADMIN`, `TECHNICIAN` y `MANAGER`.
+- Integraciones: `x-api-key` configurada en `API_KEYS`.
+- Las respuestas exitosas usan `{ success, statusCode, data, timestamp }`; los errores incluyen `{ success:false, statusCode, message, path, timestamp }`.
 
-## Resources
+Los usuarios y claves de demostración son exclusivamente para desarrollo:
 
-Check out a few resources that may come in handy when working with NestJS:
+| Rol           | Usuario                   | Contraseña              |
+| ------------- | ------------------------- | ----------------------- |
+| Administrador | `admin@fleetcore.local`   | `FleetCoreAdmin!2026`   |
+| Técnico 1     | `tech1@fleetcore.local`   | `FleetCoreTech!2026`    |
+| Técnico 2     | `tech2@fleetcore.local`   | `FleetCoreTech!2026`    |
+| Gerente       | `manager@fleetcore.local` | `FleetCoreManager!2026` |
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Las claves API de muestra son `demo-key-partner-1` y `demo-key-partner-2`. Sustituye todos estos valores antes de desplegar. La configuración de producción rechaza el secreto JWT de ejemplo, CORS `*` y API Keys que empiecen por `demo-`.
 
-## Support
+## Docker Compose
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+docker compose up --build
+docker compose logs -f api
+docker compose down
+```
 
-## Stay in touch
+Compose crea un PostgreSQL persistente y una API; la API ejecuta migraciones antes de iniciar. El servicio de base de datos se publica por defecto en el puerto host `5435`. Si ese puerto ya lo ocupa una base local, configura `POSTGRES_HOST_PORT=5436` en `.env` antes de iniciar Compose. Dentro de Docker la API usa el host `postgres` y el puerto `5432` del contenedor; la configuración nativa sigue usando `localhost:5435`.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Dump y restauración
 
-## License
+Para incluir esquema, índices, restricciones y datos:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```bash
+PGPASSWORD=postgres pg_dump -h 127.0.0.1 -p 5435 -U postgres \
+  -d fleetcore --format=custom --no-owner --file=fleetcore.dump
+```
+
+Restauración en una base ya creada:
+
+```bash
+PGPASSWORD=postgres pg_restore -h 127.0.0.1 -p 5435 -U postgres \
+  -d fleetcore --no-owner fleetcore.dump
+```
+
+Guarda los dumps y credenciales fuera del repositorio. Usa las credenciales reales del entorno cuando no sea desarrollo.
+
+## Documentación
+
+- [Arquitectura](docs/architecture.md)
+- [Base de datos](docs/database.md)
+- [API y permisos](docs/api.md)
+- [Reglas de negocio](docs/business-rules.md)
+- [Seguridad](docs/security.md)
+- [Pruebas](docs/testing.md)
+- [Operación y solución de problemas](docs/maintenance.md)
