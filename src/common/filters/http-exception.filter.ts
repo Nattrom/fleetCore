@@ -63,26 +63,26 @@ export class HttpExceptionFilter implements ExceptionFilter {
       if (code === '23505' || code === '23P01') {
         return {
           statusCode: HttpStatus.CONFLICT,
-          message: 'El recurso entra en conflicto con datos existentes',
+          message: 'The resource conflicts with existing data',
         };
       }
       if (code === '23503') {
         return {
           statusCode: HttpStatus.CONFLICT,
-          message: 'El recurso relacionado no existe o está en uso',
+          message: 'The related resource does not exist or is in use',
         };
       }
       if (code === '23514' || code === '22P02') {
         return {
           statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Los datos no cumplen las restricciones requeridas',
+          message: 'The data does not satisfy the required constraints',
         };
       }
     }
 
     return {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'Error interno del servidor',
+      message: 'Internal server error',
     };
   }
 }

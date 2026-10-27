@@ -61,7 +61,7 @@ export class UsersService {
   async createByAdmin(dto: CreateUserDto, actorId: string) {
     const email = dto.email.trim().toLowerCase();
     if (await this.findByEmail(email)) {
-      throw new ConflictException('El correo ya está registrado');
+      throw new ConflictException('Email is already registered');
     }
     const user = await this.users.save(
       this.users.create({
@@ -83,7 +83,7 @@ export class UsersService {
 
   async setActive(id: string, active: boolean, actorId: string) {
     if (id === actorId && !active) {
-      throw new ConflictException('No puedes inactivar tu propio usuario');
+      throw new ConflictException('You cannot deactivate your own user');
     }
 
     return this.dataSource.transaction(async (manager) => {
@@ -95,7 +95,7 @@ export class UsersService {
         where: { id },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!user) throw new NotFoundException('Usuario no encontrado');
+      if (!user) throw new NotFoundException('User not found');
 
       if (!active && user.role === UserRole.ADMIN && user.isActive) {
         const activeAdmins = await users.count({
@@ -103,7 +103,7 @@ export class UsersService {
         });
         if (activeAdmins <= 1) {
           throw new ConflictException(
-            'Debe existir al menos un administrador activo',
+            'At least one active administrator must exist',
           );
         }
       }

@@ -151,6 +151,52 @@ describe('AuthService', () => {
     expect(jwt.signAsync).not.toHaveBeenCalled();
   });
 
+  it('returns the generic credentials error for a corrupted Argon2 hash', async () => {
+    users.findByEmail.mockResolvedValue({
+      id: 'user-id',
+      passwordHash: '$argon2id$corrupted',
+      isActive: true,
+    } as User);
+
+    await expect(
+      service.login({
+        email: 'alex@example.com',
+        password: 'a-strong-password',
+      }),
+    ).rejects.toThrow('Incorrect email or password');
+    expect(users.updatePasswordHash).not.toHaveBeenCalled();
+    expect(jwt.signAsync).not.toHaveBeenCalled();
+  });
+
+  it('returns the same generic error for unknown, inactive and wrong-password logins', async () => {
+    const verifyDummy = jest.spyOn(passwords, 'verifyDummy');
+    const login = () =>
+      service
+        .login({ email: 'alex@example.com', password: 'a-strong-password' })
+        .catch((error: Error) => error);
+
+    users.findByEmail.mockResolvedValueOnce(null);
+    const unknown = await login();
+    users.findByEmail.mockResolvedValueOnce({
+      id: 'user-id',
+      passwordHash: await bcrypt.hash('a-strong-password', 4),
+      isActive: false,
+    } as User);
+    const inactive = await login();
+    users.findByEmail.mockResolvedValueOnce({
+      id: 'user-id',
+      passwordHash: await bcrypt.hash('other-password', 4),
+      isActive: true,
+    } as User);
+    const wrong = await login();
+
+    for (const error of [unknown, inactive, wrong]) {
+      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error.message).toBe('Incorrect email or password');
+    }
+    expect(verifyDummy).toHaveBeenCalledTimes(2);
+  });
+
   it('returns the authenticated user profile without credentials', () => {
     expect(
       service.profile({

@@ -23,22 +23,21 @@ export const envValidationSchema = z
       context.addIssue({
         code: 'custom',
         path: ['JWT_SECRET'],
-        message: 'JWT_SECRET debe reemplazarse antes del despliegue',
+        message: 'JWT_SECRET must be replaced before deployment',
       });
     }
     if (env.CORS_ORIGIN === '*') {
       context.addIssue({
         code: 'custom',
         path: ['CORS_ORIGIN'],
-        message:
-          'CORS_ORIGIN debe limitarse a orígenes permitidos en producción',
+        message: 'CORS_ORIGIN must be limited to allowed origins in production',
       });
     }
     if (env.API_KEYS.split(',').some((key) => key.trim().startsWith('demo-'))) {
       context.addIssue({
         code: 'custom',
         path: ['API_KEYS'],
-        message: 'Las API Keys de demostración no pueden usarse en producción',
+        message: 'Demo API keys cannot be used in production',
       });
     }
   });

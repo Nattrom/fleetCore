@@ -11,7 +11,6 @@ import { Workshop } from './workshops/entities/workshop.entity.js';
 import { Maintenance } from './maintenances/entities/maintenance.entity.js';
 import { AuditLog } from './audit/entities/audit-log.entity.js';
 import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
@@ -53,7 +52,6 @@ import { MaintenancesModule } from './maintenances/maintenances.module.js';
   ],
   controllers: [AppController],
   providers: [
-    AppService,
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
   ],

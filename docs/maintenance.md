@@ -1,12 +1,12 @@
-# Operación y solución de problemas
+# Operations and troubleshooting
 
-## Inicio local
+## Local startup
 
-1. Confirma que PostgreSQL acepte conexiones en `127.0.0.1:5435`.
-2. Verifica las variables en `.env`; el puerto local por defecto es `5435`.
-3. Ejecuta `npm run migration:show` y `npm run migration:run`.
-4. Para datos de desarrollo, ejecuta `npm run seed`.
-5. Inicia con `npm run start:dev`; salud en `/health` y Swagger en `/api/docs`.
+1. Confirm that PostgreSQL accepts connections at `127.0.0.1:5435`.
+2. Check the variables in `.env`; the default local port is `5435`.
+3. Run `npm run migration:show` and `npm run migration:run`.
+4. For development data, run `npm run seed`.
+5. Start with `npm run start:dev`; health check at `/health` and Swagger at `/api/docs`.
 
 ## Docker
 
@@ -17,16 +17,16 @@ docker compose logs -f postgres
 docker compose down
 ```
 
-El volumen `fleetcore-postgres` conserva los datos al detener contenedores. Si ya hay otro servicio en host `5435`, establece `POSTGRES_HOST_PORT=5436` para Compose o ejecuta la API nativamente contra el PostgreSQL existente.
+The `fleetcore-postgres` volume retains data when containers are stopped. If another service is already using host port `5435`, set `POSTGRES_HOST_PORT=5436` for Compose or run the API natively against the existing PostgreSQL instance.
 
-## Errores frecuentes
+## Common errors
 
-- **Conexión rechazada:** comprueba host, puerto `5435`, base y credenciales; no cambies a `5432`.
-- **Relación o columna inexistente:** aplica migraciones pendientes, no habilites `synchronize`.
-- **`btree_gist` no disponible:** instala/habilita la extensión con una cuenta PostgreSQL que tenga permisos y vuelve a ejecutar la migración.
-- **JWT o API Key rechazados:** revisa `JWT_SECRET`, `JWT_EXPIRES_IN` y `API_KEYS`; no pegues secretos en logs o incidencias.
-- **Conflicto `409`:** revisa vehículos con intervención activa, intervalos del mecánico y estado activo de los recursos.
-- **Docker no publica 5435:** configura `POSTGRES_HOST_PORT` a un puerto libre y conserva `DB_PORT=5435` para la ejecución nativa.
+- **Connection refused:** check the host, port `5435`, database, and credentials; do not switch to `5432`.
+- **Relation or column does not exist:** apply pending migrations; do not enable `synchronize`.
+- **`btree_gist` unavailable:** install/enable the extension using a PostgreSQL account with the required permissions, then rerun the migration.
+- **JWT or API key rejected:** check `JWT_SECRET`, `JWT_EXPIRES_IN`, and `API_KEYS`; do not paste secrets into logs or issue reports.
+- **`409` conflict:** check for vehicles with active maintenance, mechanic schedule conflicts, and inactive resources.
+- **Docker does not publish port 5435:** set `POSTGRES_HOST_PORT` to a free port and keep `DB_PORT=5435` for native execution.
 
 ## Dump PostgreSQL
 
@@ -35,4 +35,4 @@ PGPASSWORD=postgres pg_dump -h 127.0.0.1 -p 5435 -U postgres \
   -d fleetcore --format=custom --no-owner --file=fleetcore.dump
 ```
 
-El dump contiene datos; almacénalo cifrado y fuera del repositorio. Para restaurar, crea previamente la base objetivo y usa `pg_restore`.
+The dump contains data; store it encrypted and outside the repository. To restore, create the target database first and use `pg_restore`.

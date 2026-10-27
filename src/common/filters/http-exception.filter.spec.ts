@@ -61,7 +61,7 @@ describe('HttpExceptionFilter', () => {
     expect(status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
     expect(json).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'El recurso entra en conflicto con datos existentes',
+        message: 'The resource conflicts with existing data',
       }),
     );
   });
@@ -74,7 +74,7 @@ describe('HttpExceptionFilter', () => {
     expect(json).toHaveBeenCalledWith(
       expect.objectContaining({
         statusCode: 500,
-        message: 'Error interno del servidor',
+        message: 'Internal server error',
       }),
     );
   });

@@ -1,33 +1,33 @@
-# Base de datos
+# Database
 
-La aplicación se conecta localmente a PostgreSQL en `localhost:5435`, base `fleetcore`. Las migraciones están en `src/database/migrations`; aplica cambios con `npm run migration:run`. No habilites `synchronize` en producción.
+The application connects locally to PostgreSQL at `localhost:5435`, database `fleetcore`. Migrations are in `src/database/migrations`; apply changes with `npm run migration:run`. Do not enable `synchronize` in production.
 
-## Modelo
+## Model
 
-- `users`: nombre, correo normalizado, hash Argon2, rol y estado activo.
-- `vehicles`: placa normalizada, marca/modelo, año, kilometraje y disponibilidad.
-- `mechanics`: datos del mecánico y vínculo opcional único a un usuario `TECHNICIAN`.
-- `workshops`: nombre, dirección y estado activo.
-- `maintenances`: vehículo, mecánico, taller, tipo, agenda, estado e información de cierre.
-- `audit_logs`: usuario responsable opcional, acción, entidad, identificador, detalles JSONB sanitizados y fecha.
+- `users`: name, normalized email, Argon2 hash, role, and active status.
+- `vehicles`: normalized license plate, make/model, year, mileage, and availability.
+- `mechanics`: mechanic details and optional unique link to a `TECHNICIAN` user.
+- `workshops`: name, address, and active status.
+- `maintenances`: vehicle, mechanic, workshop, type, schedule, status, and closure information.
+- `audit_logs`: optional responsible user, action, entity, identifier, sanitized JSONB details, and timestamp.
 
-Vehículo, mecánico y taller tienen relación uno-a-muchos con mantenimientos. Las claves foráneas usan `RESTRICT` para proteger el historial; la auditoría pone el usuario a `NULL` al eliminar una identidad, aunque los recursos operativos no se eliminan físicamente.
+Vehicles, mechanics, and workshops have a one-to-many relationship with maintenance records. Foreign keys use `RESTRICT` to protect history; audit records set the user to `NULL` when an identity is deleted, although operational resources are not physically deleted.
 
-## Integridad e índices
+## Integrity and indexes
 
-- Índices únicos sobre correo y placa normalizados.
-- Índices de mantenimiento por vehículo/fecha, mecánico/estado/fecha, taller y estado/fecha.
-- Índices de estado operativo para vehículos, mecánicos y talleres.
-- Índices de auditoría por fecha y por usuario/acción/fecha.
-- Índice único parcial por vehículo para impedir más de un estado `SCHEDULED` o `IN_PROGRESS`.
-- Restricción de exclusión GiST sobre mecánico e intervalo `[scheduled_at, scheduled_end_at)` para impedir solapamientos activos concurrentes.
-- Checks de años, kilometrajes, intervalos y coste; un cierre `COMPLETED` requiere trabajo, coste, fecha y kilometraje final.
+- Unique indexes on normalized email and license plate.
+- Maintenance indexes by vehicle/date, mechanic/status/date, workshop, and status/date.
+- Operational status indexes for vehicles, mechanics, and workshops.
+- Audit indexes by date and by user/action/date.
+- Partial unique index per vehicle to prevent more than one `SCHEDULED` or `IN_PROGRESS` status.
+- GiST exclusion constraint on mechanic and interval `[scheduled_at, scheduled_end_at)` to prevent concurrent active overlaps.
+- Checks for years, mileage, intervals, and cost; a `COMPLETED` closure requires work, cost, date, and final mileage.
 
-La extensión PostgreSQL `btree_gist` respalda la restricción de agenda. El driver puede habilitar `uuid-ossp` para generación de UUID.
+The PostgreSQL `btree_gist` extension supports the schedule constraint. The driver may enable `uuid-ossp` for UUID generation.
 
-La migración `1761562000000` limita el enum a `ADMIN` y `TECHNICIAN`. Las cuentas que tenían rol `MANAGER` se conservan como `TECHNICIAN` inactivas; una tabla auxiliar conserva su rol/estado anterior para que el `down` pueda restaurarlos. No se eliminan cuentas. Un administrador debe revisar y reactivar explícitamente cada cuenta si corresponde. No reviertas la migración en producción sin valorar que se volverá a habilitar el rol anterior.
+Migration `1761562000000` limits the enum to `ADMIN` and `TECHNICIAN`. Accounts with the `MANAGER` role are retained as inactive `TECHNICIAN` accounts; an auxiliary table preserves their previous role/status so that `down` can restore them. No accounts are deleted. An administrator must review and explicitly reactivate each account if appropriate. Do not revert the migration in production without considering that the previous role will be re-enabled.
 
-## Migraciones
+## Migrations
 
 ```bash
 npm run migration:show
@@ -35,4 +35,4 @@ npm run migration:run
 npm run migration:revert
 ```
 
-Después de cambiar entidades, genera una migración, revísala y ejecútala. Nunca edites una migración ya aplicada en un entorno compartido: crea una migración nueva.
+After changing entities, generate a migration, review it, and run it. Never edit a migration that has already been applied in a shared environment; create a new migration instead.

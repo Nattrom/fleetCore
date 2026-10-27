@@ -251,6 +251,133 @@ describe('FleetCore API (e2e)', () => {
     expect(updatedVehicle.body.data.mileage).toBe(initialMileage + 100);
   });
 
+  it('denies a deactivated user the old token and any new login', async () => {
+    const email = `inactive-${randomUUID()}@fleetcore.test`;
+    const password = 'test-password-2026';
+    const created = await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Soon Inactive',
+        email,
+        password,
+        role: UserRole.TECHNICIAN,
+      })
+      .expect(201);
+    const userId = created.body.data.id as string;
+    const oldToken = await app.get(JwtService).signAsync({ sub: userId });
+
+    await request(app.getHttpServer())
+      .get('/auth/profile')
+      .set('Authorization', `Bearer ${oldToken}`)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .post(`/users/${userId}/deactivate`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .get('/auth/profile')
+      .set('Authorization', `Bearer ${oldToken}`)
+      .expect(401)
+      .expect(({ body }) => expect(body.statusCode).toBe(401));
+
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email, password })
+      .expect(401)
+      .expect(({ body }) => {
+        expect(body.statusCode).toBe(401);
+        expect(body.message).toBe('Incorrect email or password');
+      });
+  });
+
+  it('enforces the endpoint permission matrix for technicians and anonymous callers', async () => {
+    const id = randomUUID();
+    const adminOnly: Array<['get' | 'post' | 'patch', string]> = [
+      ['get', '/users'],
+      ['post', '/users'],
+      ['post', `/users/${id}/activate`],
+      ['post', `/users/${id}/deactivate`],
+      ['get', '/vehicles'],
+      ['get', `/vehicles/${id}`],
+      ['post', '/vehicles'],
+      ['patch', `/vehicles/${id}`],
+      ['post', `/vehicles/${id}/deactivate`],
+      ['get', `/vehicles/${id}/maintenances`],
+      ['get', '/mechanics'],
+      ['get', `/mechanics/${id}`],
+      ['post', '/mechanics'],
+      ['patch', `/mechanics/${id}`],
+      ['post', `/mechanics/${id}/activate`],
+      ['post', `/mechanics/${id}/deactivate`],
+      ['get', '/workshops'],
+      ['get', `/workshops/${id}`],
+      ['post', '/workshops'],
+      ['patch', `/workshops/${id}`],
+      ['post', `/workshops/${id}/activate`],
+      ['post', `/workshops/${id}/deactivate`],
+      ['post', '/maintenances'],
+    ];
+
+    for (const [method, path] of adminOnly) {
+      const technician = await request(app.getHttpServer())
+        [method](path)
+        .set('Authorization', `Bearer ${technicianToken}`)
+        .send({});
+      expect({ route: `${method} ${path}`, status: technician.status }).toEqual(
+        { route: `${method} ${path}`, status: 403 },
+      );
+      expect(technician.body.statusCode).toBe(403);
+
+      const anonymous = await request(app.getHttpServer())
+        [method](path)
+        .send({});
+      expect({ route: `${method} ${path}`, status: anonymous.status }).toEqual({
+        route: `${method} ${path}`,
+        status: 401,
+      });
+      expect(anonymous.body.statusCode).toBe(401);
+    }
+
+    for (const token of [adminToken, technicianToken]) {
+      await request(app.getHttpServer())
+        .get('/auth/profile')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+    }
+    await request(app.getHttpServer())
+      .get('/maintenances')
+      .set('Authorization', `Bearer ${technicianToken}`)
+      .expect(200);
+  });
+
+  it('rejects registration payloads that try to set privileged properties', async () => {
+    for (const extra of [
+      { role: UserRole.ADMIN },
+      { isActive: true },
+      {
+        passwordHash:
+          '$2b$12$forgedhashforgedhashforgedhashforgedhashforgedhash',
+      },
+    ]) {
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          name: 'Escalation Attempt',
+          email: `escalation-${randomUUID()}@fleetcore.test`,
+          password: 'test-password-2026',
+          ...extra,
+        })
+        .expect(400)
+        .expect(({ body }) => {
+          expect(body.statusCode).toBe(400);
+          expect(body.success).toBe(false);
+        });
+    }
+  });
+
   it('rate limits repeated authentication attempts with numeric error codes', async () => {
     const responses = [];
     for (let attempt = 0; attempt < 12; attempt += 1) {

@@ -55,9 +55,7 @@ export class MaintenancesService {
       Number.isNaN(scheduledEndAt.getTime()) ||
       scheduledEndAt <= scheduledAt
     ) {
-      throw new BadRequestException(
-        'La fecha de fin debe ser posterior al inicio',
-      );
+      throw new BadRequestException('End date must be after the start date');
     }
 
     return this.dataSource.transaction(async (manager) => {
@@ -65,21 +63,21 @@ export class MaintenancesService {
         where: { id: dto.vehicleId },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!vehicle) throw new NotFoundException('Vehículo no encontrado');
+      if (!vehicle) throw new NotFoundException('Vehicle not found');
       if (vehicle.status === VehicleStatus.INACTIVE) {
-        throw new ConflictException('No se puede asignar un vehículo inactivo');
+        throw new ConflictException('Cannot assign an inactive vehicle');
       }
       if (vehicle.status === VehicleStatus.IN_MAINTENANCE) {
-        throw new ConflictException('El vehículo ya está en mantenimiento');
+        throw new ConflictException('The vehicle is already under maintenance');
       }
 
       const mechanic = await manager.getRepository(Mechanic).findOne({
         where: { id: dto.mechanicId },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!mechanic) throw new NotFoundException('Mecánico no encontrado');
+      if (!mechanic) throw new NotFoundException('Mechanic not found');
       if (!mechanic.isActive) {
-        throw new ConflictException('No se puede asignar un mecánico inactivo');
+        throw new ConflictException('Cannot assign an inactive mechanic');
       }
       if (mechanic.userId) {
         const mechanicUser = await manager.getRepository(User).findOne({
@@ -91,7 +89,7 @@ export class MaintenancesService {
         });
         if (!mechanicUser) {
           throw new ConflictException(
-            'La cuenta vinculada al mecánico no está activa',
+            'The account linked to the mechanic is not active',
           );
         }
       }
@@ -100,14 +98,14 @@ export class MaintenancesService {
         where: { id: dto.workshopId },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!workshop) throw new NotFoundException('Taller no encontrado');
+      if (!workshop) throw new NotFoundException('Workshop not found');
       if (!workshop.isActive) {
-        throw new ConflictException('No se puede asignar un taller inactivo');
+        throw new ConflictException('Cannot assign an inactive workshop');
       }
 
       if (dto.mileage < vehicle.mileage) {
         throw new ConflictException(
-          'El kilometraje de la intervención no puede ser menor al actual',
+          'The maintenance mileage cannot be lower than the current mileage',
         );
       }
 
@@ -124,7 +122,7 @@ export class MaintenancesService {
         });
       if (activeVehicleMaintenance) {
         throw new ConflictException(
-          'El vehículo ya tiene un mantenimiento activo',
+          'The vehicle already has an active maintenance',
         );
       }
 
@@ -147,7 +145,7 @@ export class MaintenancesService {
         .getExists();
       if (overlappingMechanicMaintenance) {
         throw new ConflictException(
-          'El mecánico ya tiene una asignación en ese horario',
+          'The mechanic already has an assignment in that time slot',
         );
       }
 
@@ -223,8 +221,7 @@ export class MaintenancesService {
       where: { id },
       relations: { vehicle: true, mechanic: true, workshop: true },
     });
-    if (!maintenance)
-      throw new NotFoundException('Mantenimiento no encontrado');
+    if (!maintenance) throw new NotFoundException('Maintenance not found');
     this.assertCanAccess(maintenance, actor);
     return maintenance;
   }
@@ -245,7 +242,7 @@ export class MaintenancesService {
     const exists = await this.dataSource
       .getRepository(Vehicle)
       .exists({ where: { id } });
-    if (!exists) throw new NotFoundException('Vehículo no encontrado');
+    if (!exists) throw new NotFoundException('Vehicle not found');
     const [items, total] = await this.maintenances.findAndCount({
       where: { vehicleId: id },
       relations: { mechanic: true, workshop: true },
@@ -263,13 +260,13 @@ export class MaintenancesService {
   ) {
     if (actor.role === UserRole.TECHNICIAN && actor.mechanicId !== id) {
       throw new ForbiddenException(
-        'No puedes consultar los mantenimientos de otro mecánico',
+        'You cannot view maintenance records of another mechanic',
       );
     }
     const exists = await this.dataSource
       .getRepository(Mechanic)
       .exists({ where: { id } });
-    if (!exists) throw new NotFoundException('Mecánico no encontrado');
+    if (!exists) throw new NotFoundException('Mechanic not found');
     const [items, total] = await this.maintenances.findAndCount({
       where: { mechanicId: id },
       relations: { vehicle: true, workshop: true },
@@ -295,14 +292,14 @@ export class MaintenancesService {
         where: { id: maintenance.vehicleId },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!vehicle) throw new NotFoundException('Vehículo no encontrado');
+      if (!vehicle) throw new NotFoundException('Vehicle not found');
       maintenance.status = dto.status;
       const saved = await manager.getRepository(Maintenance).save(maintenance);
 
       if (dto.status === MaintenanceStatus.IN_PROGRESS) {
         if (vehicle.status === VehicleStatus.INACTIVE) {
           throw new ConflictException(
-            'No se puede iniciar mantenimiento de un vehículo inactivo',
+            'Cannot start maintenance on an inactive vehicle',
           );
         }
         vehicle.status = VehicleStatus.IN_MAINTENANCE;
@@ -342,20 +339,20 @@ export class MaintenancesService {
         where: { id: maintenance.vehicleId },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!vehicle) throw new NotFoundException('Vehículo no encontrado');
+      if (!vehicle) throw new NotFoundException('Vehicle not found');
       const finalMileage = dto.finalMileage;
       if (
         finalMileage < maintenance.mileage ||
         finalMileage < vehicle.mileage
       ) {
         throw new ConflictException(
-          'El kilometraje final no puede ser menor al registrado o al actual del vehículo',
+          'The final mileage cannot be lower than the recorded mileage or the vehicle current mileage',
         );
       }
 
       maintenance.workPerformed = dto.workPerformed.trim();
       if (!maintenance.workPerformed) {
-        throw new BadRequestException('El trabajo realizado es obligatorio');
+        throw new BadRequestException('The work performed is required');
       }
       maintenance.cost = dto.cost;
       maintenance.finishedAt = new Date(dto.finishedAt);
@@ -392,8 +389,7 @@ export class MaintenancesService {
       where: { id },
       lock: { mode: 'pessimistic_write' },
     });
-    if (!maintenance)
-      throw new NotFoundException('Mantenimiento no encontrado');
+    if (!maintenance) throw new NotFoundException('Maintenance not found');
     return maintenance;
   }
 
@@ -450,7 +446,7 @@ export class MaintenancesService {
       maintenance.mechanicId !== actor.mechanicId
     ) {
       throw new ForbiddenException(
-        'No puedes consultar un mantenimiento no asignado',
+        'You cannot view a maintenance that is not assigned to you',
       );
     }
   }
@@ -466,7 +462,7 @@ export class MaintenancesService {
       maintenance.mechanicId !== actor.mechanicId
     ) {
       throw new ForbiddenException(
-        'No tienes permiso para modificar este mantenimiento',
+        'You do not have permission to modify this maintenance',
       );
     }
   }
