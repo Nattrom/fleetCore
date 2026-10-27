@@ -7,7 +7,7 @@ export class AuditLog {
   id: string;
 
   @Column({ name: 'user_id', nullable: true })
-  userId: string;
+  userId: string | null;
 
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'user_id' })
@@ -20,16 +20,16 @@ export class AuditLog {
   entity: string;
 
   @Column({ name: 'entity_id', nullable: true })
-  entityId: string;
+  entityId: string | null;
 
   @Column('jsonb', { nullable: true })
   details: Record<string, unknown> | null;
 
   @Column({ type: 'inet', nullable: true })
-  ip: string;
+  ip: string | null;
 
   @Column({ name: 'user_agent', type: 'varchar', length: 500, nullable: true })
-  userAgent: string;
+  userAgent: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
