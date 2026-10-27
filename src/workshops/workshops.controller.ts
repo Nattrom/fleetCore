@@ -8,7 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
@@ -25,18 +25,21 @@ export class WorkshopsController {
   constructor(private readonly workshops: WorkshopsService) {}
 
   @Get()
+  @ApiOperation({ summary: 'List workshops (ADMIN)' })
   @Roles(UserRole.ADMIN)
   list(@Query() query: PaginationQueryDto) {
     return this.workshops.list(query);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a workshop by id (ADMIN)' })
   @Roles(UserRole.ADMIN)
   get(@Param('id', ParseUUIDPipe) id: string) {
     return this.workshops.get(id);
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a workshop (ADMIN)' })
   @Roles(UserRole.ADMIN)
   create(
     @Body() dto: CreateWorkshopDto,
@@ -46,6 +49,7 @@ export class WorkshopsController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a workshop (ADMIN)' })
   @Roles(UserRole.ADMIN)
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -56,6 +60,7 @@ export class WorkshopsController {
   }
 
   @Post(':id/activate')
+  @ApiOperation({ summary: 'Activate a workshop (ADMIN)' })
   @Roles(UserRole.ADMIN)
   activate(
     @Param('id', ParseUUIDPipe) id: string,
@@ -65,6 +70,7 @@ export class WorkshopsController {
   }
 
   @Post(':id/deactivate')
+  @ApiOperation({ summary: 'Deactivate a workshop (ADMIN)' })
   @Roles(UserRole.ADMIN)
   deactivate(
     @Param('id', ParseUUIDPipe) id: string,

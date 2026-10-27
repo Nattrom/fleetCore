@@ -164,7 +164,7 @@ describe('MaintenancesService', () => {
     const h = harness();
     await expect(
       h.service.create({ ...h.dto, scheduledEndAt: h.dto.scheduledAt }, admin),
-    ).rejects.toThrow('La fecha de fin debe ser posterior al inicio');
+    ).rejects.toThrow('End date must be after the start date');
     expect(h.dataSource.transaction).not.toHaveBeenCalled();
   });
 

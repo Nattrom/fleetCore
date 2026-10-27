@@ -1,42 +1,42 @@
-# API y permisos
+# API and permissions
 
-Base URL local: `http://localhost:3000`. Swagger: `/api/docs`. Todas las rutas, excepto registro, login, salud e integración por API Key, requieren `Authorization: Bearer <JWT>`.
+Local base URL: `http://localhost:3000`. Swagger: `/api/docs`. `GET /` is not exposed. All routes, except registration, login, `/health`, and API key integration, require `Authorization: Bearer <token>`.
 
-## Resumen de rutas
+## Route summary
 
-| Método          | Ruta                                                   | Acceso                                                   |
+| Method          | Route                                                  | Access                                                   |
 | --------------- | ------------------------------------------------------ | -------------------------------------------------------- |
-| `POST`          | `/auth/register`                                       | Público; solo crea `TECHNICIAN`; límite 10/minuto por IP |
-| `POST`          | `/auth/login`                                          | Público; límite 10/minuto por IP                         |
-| `GET`           | `/auth/profile`                                        | Usuario autenticado                                      |
+| `POST`          | `/auth/register`                                       | Public; creates only `TECHNICIAN`; limit 10/minute per IP |
+| `POST`          | `/auth/login`                                          | Public; limit 10/minute per IP                           |
+| `GET`           | `/auth/profile`                                        | Authenticated user                                       |
 | `GET`, `POST`   | `/users`                                               | `ADMIN`                                                  |
-| `POST`          | `/users/:id/activate` o `/deactivate`                  | `ADMIN`                                                  |
+| `POST`          | `/users/:id/activate` or `/deactivate`                  | `ADMIN`                                                  |
 | `GET`           | `/vehicles`, `/vehicles/:id`, `/vehicles/plate/:plate` | `ADMIN`                                                  |
 | `POST`, `PATCH` | `/vehicles`, `/vehicles/:id`                           | `ADMIN`                                                  |
 | `POST`          | `/vehicles/:id/deactivate`                             | `ADMIN`                                                  |
 | `GET`           | `/mechanics`, `/mechanics/:id`                         | `ADMIN`                                                  |
 | `POST`          | `/mechanics`                                           | `ADMIN`                                                  |
 | `PATCH`         | `/mechanics/:id`                                       | `ADMIN`                                                  |
-| `POST`          | `/mechanics/:id/activate` o `/deactivate`              | `ADMIN`                                                  |
+| `POST`          | `/mechanics/:id/activate` or `/deactivate`              | `ADMIN`                                                  |
 | `GET`           | `/workshops`, `/workshops/:id`                         | `ADMIN`                                                  |
 | `POST`          | `/workshops`                                           | `ADMIN`                                                  |
 | `PATCH`         | `/workshops/:id`                                       | `ADMIN`                                                  |
-| `POST`          | `/workshops/:id/activate` o `/deactivate`              | `ADMIN`                                                  |
+| `POST`          | `/workshops/:id/activate` or `/deactivate`              | `ADMIN`                                                  |
 | `POST`          | `/maintenances`                                        | `ADMIN`                                                  |
-| `GET`           | `/maintenances`, `/maintenances/active`                | `ADMIN`; `TECHNICIAN` solo ve sus asignaciones           |
+| `GET`           | `/maintenances`, `/maintenances/active`                | `ADMIN`; `TECHNICIAN` can only see their assignments     |
 | `GET`           | `/maintenances/my-assignments`                         | `TECHNICIAN`                                             |
-| `GET`           | `/maintenances/:id`                                    | `ADMIN`; técnico asignado                                |
-| `PATCH`         | `/maintenances/:id/status`, `/complete`, `/cancel`     | `ADMIN`; técnico asignado                                |
+| `GET`           | `/maintenances/:id`                                    | `ADMIN` or assigned technician                         |
+| `PATCH`         | `/maintenances/:id/status`, `/complete`, `/cancel`     | `ADMIN`; assigned technician                             |
 | `GET`           | `/vehicles/:id/maintenances`                           | `ADMIN`                                                  |
-| `GET`           | `/mechanics/:id/maintenances`                          | `ADMIN`; técnico solo el propio                          |
-| `GET`           | `/integrations/vehicles/:id/maintenance-history`       | Cabecera `x-api-key`                                     |
-| `GET`           | `/health`                                              | Público                                                  |
+| `GET`           | `/mechanics/:id/maintenances`                          | `ADMIN`; technicians may access only their own          |
+| `GET`           | `/integrations/vehicles/:id/maintenance-history`       | `x-api-key` header                                       |
+| `GET`           | `/health`                                              | Public                                                   |
 
-Los listados aceptan `page` (1 por defecto) y `limit` (20 por defecto, máximo 100). Vehículos también acepta `status` y `plate`; mecánicos acepta `isActive`. Los filtros y ordenamientos permitidos están tipados; no se acepta SQL arbitrario.
+Lists accept `page` (1 by default) and `limit` (20 by default, maximum 100). Vehicles also accept `status` and `plate`; mechanics accept `isActive`. Allowed filters and sort orders are typed; arbitrary SQL is not accepted.
 
-## Contratos de respuesta
+## Response contracts
 
-Éxito:
+Success:
 
 ```json
 {
@@ -53,10 +53,10 @@ Error:
 {
   "success": false,
   "statusCode": 409,
-  "message": "El vehículo ya tiene un mantenimiento activo",
+  "message": "The vehicle already has active maintenance",
   "path": "/maintenances",
   "timestamp": "2026-10-27T12:00:00.000Z"
 }
 ```
 
-El código real de HTTP se conserva; las creaciones responden `201`. Los errores de persistencia conocidos se traducen a `400` o `409` sin devolver SQL ni trazas. Los intentos de login/registro que exceden el límite responden `429`.
+The actual HTTP status code is preserved; creations return `201`. Known persistence errors are translated to `400` or `409` without returning SQL or stack traces. Login and registration attempts that exceed the limit return `429`.

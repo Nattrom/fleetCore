@@ -29,14 +29,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     if (!payload.sub) {
-      throw new UnauthorizedException('Token inválido');
+      throw new UnauthorizedException('Invalid token');
     }
     const user = await this.users.findOne({
       where: { id: payload.sub, isActive: true },
       select: { id: true, name: true, email: true, role: true, isActive: true },
     });
     if (!user) {
-      throw new UnauthorizedException('Credenciales no válidas');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const mechanic = await this.mechanics.findOne({

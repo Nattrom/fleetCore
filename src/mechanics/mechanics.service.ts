@@ -39,7 +39,7 @@ export class MechanicsService {
 
   async get(id: string): Promise<Mechanic> {
     const mechanic = await this.mechanics.findOne({ where: { id } });
-    if (!mechanic) throw new NotFoundException('Mecánico no encontrado');
+    if (!mechanic) throw new NotFoundException('Mechanic not found');
     return mechanic;
   }
 
@@ -102,7 +102,7 @@ export class MechanicsService {
         where: { id },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!mechanic) throw new NotFoundException('Mecánico no encontrado');
+      if (!mechanic) throw new NotFoundException('Mechanic not found');
       if (
         !active &&
         (await manager.getRepository(Maintenance).exists({
@@ -116,7 +116,7 @@ export class MechanicsService {
         }))
       ) {
         throw new ConflictException(
-          'No se puede inactivar un mecánico con mantenimientos activos',
+          'A mechanic with active maintenance cannot be deactivated',
         );
       }
       mechanic.isActive = active;
@@ -140,13 +140,13 @@ export class MechanicsService {
     });
     if (!user || user.role !== UserRole.TECHNICIAN) {
       throw new ConflictException(
-        'El usuario debe existir, estar activo y tener rol TECHNICIAN',
+        'The user must exist, be active, and have the TECHNICIAN role',
       );
     }
     const alreadyLinked = await this.mechanics.findOne({ where: { userId } });
     if (alreadyLinked) {
       throw new ConflictException(
-        'El usuario ya está vinculado a otro mecánico',
+        'The user is already linked to another mechanic',
       );
     }
   }

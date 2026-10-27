@@ -6,7 +6,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiSecurity, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiSecurity,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator.js';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { ApiKeyGuard } from '../common/guards/api-key.guard.js';
@@ -20,6 +25,10 @@ import { IntegrationsService } from './integrations.service.js';
 export class IntegrationsController {
   constructor(private readonly integrations: IntegrationsService) {}
 
+  @ApiOperation({
+    summary: 'Vehicle maintenance history for partners (x-api-key)',
+  })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid API key' })
   @Get('vehicles/:id/maintenance-history')
   vehicleHistory(
     @Param('id', ParseUUIDPipe) id: string,

@@ -37,7 +37,7 @@ export class VehiclesService {
 
   async get(id: string): Promise<Vehicle> {
     const vehicle = await this.vehicles.findOne({ where: { id } });
-    if (!vehicle) throw new NotFoundException('Vehículo no encontrado');
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
     return vehicle;
   }
 
@@ -45,14 +45,14 @@ export class VehiclesService {
     const vehicle = await this.vehicles.findOne({
       where: { plate: this.normalizePlate(plate) },
     });
-    if (!vehicle) throw new NotFoundException('Vehículo no encontrado');
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
     return vehicle;
   }
 
   async create(dto: CreateVehicleDto, actorId: string): Promise<Vehicle> {
     const plate = this.normalizePlate(dto.plate);
     if (await this.vehicles.findOne({ where: { plate } })) {
-      throw new ConflictException('La placa ya está registrada');
+      throw new ConflictException('License plate is already registered');
     }
     const vehicle = await this.vehicles.save(
       this.vehicles.create({
@@ -83,9 +83,9 @@ export class VehiclesService {
         where: { id },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!vehicle) throw new NotFoundException('Vehículo no encontrado');
+      if (!vehicle) throw new NotFoundException('Vehicle not found');
       if (dto.mileage !== undefined && dto.mileage < vehicle.mileage) {
-        throw new ConflictException('El kilometraje no puede disminuir');
+        throw new ConflictException('Mileage cannot decrease');
       }
       if (dto.mileage !== undefined && dto.mileage !== vehicle.mileage) {
         const hasActiveMaintenance = await manager
@@ -101,7 +101,7 @@ export class VehiclesService {
           });
         if (hasActiveMaintenance) {
           throw new ConflictException(
-            'El kilometraje no puede editarse durante un mantenimiento activo',
+            'Mileage cannot be edited during active maintenance',
           );
         }
       }
@@ -111,7 +111,7 @@ export class VehiclesService {
           .getRepository(Vehicle)
           .findOne({ where: { plate } });
         if (duplicate && duplicate.id !== id) {
-          throw new ConflictException('La placa ya está registrada');
+          throw new ConflictException('License plate is already registered');
         }
         vehicle.plate = plate;
       }
@@ -142,7 +142,7 @@ export class VehiclesService {
         where: { id },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!vehicle) throw new NotFoundException('Vehículo no encontrado');
+      if (!vehicle) throw new NotFoundException('Vehicle not found');
       const activeMaintenance = await manager
         .getRepository(Maintenance)
         .exists({
@@ -156,7 +156,7 @@ export class VehiclesService {
         });
       if (activeMaintenance) {
         throw new ConflictException(
-          'No se puede inactivar un vehículo con mantenimiento activo',
+          'A vehicle with active maintenance cannot be deactivated',
         );
       }
       vehicle.status = VehicleStatus.INACTIVE;
