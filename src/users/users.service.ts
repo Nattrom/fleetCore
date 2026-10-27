@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as argon2 from 'argon2';
 import { DataSource, Repository } from 'typeorm';
 import { AuditService } from '../audit/audit.service.js';
 import {
@@ -12,6 +11,7 @@ import {
   paginated,
 } from '../common/dto/pagination-query.dto.js';
 import { UserRole } from '../common/enums/index.js';
+import { PasswordHasherService } from '../common/security/password-hasher.service.js';
 import { User } from './entities/user.entity.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 
@@ -22,6 +22,7 @@ export class UsersService {
     private readonly users: Repository<User>,
     private readonly dataSource: DataSource,
     private readonly audit: AuditService,
+    private readonly passwords: PasswordHasherService,
   ) {}
 
   findByEmail(email: string): Promise<User | null> {
@@ -34,6 +35,10 @@ export class UsersService {
 
   create(user: Partial<User>): Promise<User> {
     return this.users.save(this.users.create(user));
+  }
+
+  async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+    await this.users.update({ id }, { passwordHash });
   }
 
   async list(query: PaginationQueryDto) {
@@ -62,7 +67,7 @@ export class UsersService {
       this.users.create({
         name: dto.name.trim(),
         email,
-        passwordHash: await argon2.hash(dto.password),
+        passwordHash: await this.passwords.hash(dto.password),
         role: dto.role,
       }),
     );

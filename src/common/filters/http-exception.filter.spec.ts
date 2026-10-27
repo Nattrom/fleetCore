@@ -1,7 +1,10 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   HttpStatus,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { jest } from '@jest/globals';
 import { QueryFailedError } from 'typeorm';
@@ -26,6 +29,13 @@ describe('HttpExceptionFilter', () => {
       HttpStatus.BAD_REQUEST,
       'invalid input',
     ],
+    [
+      new UnauthorizedException('unauthorized'),
+      HttpStatus.UNAUTHORIZED,
+      'unauthorized',
+    ],
+    [new ForbiddenException('forbidden'), HttpStatus.FORBIDDEN, 'forbidden'],
+    [new NotFoundException('missing'), HttpStatus.NOT_FOUND, 'missing'],
     [new ConflictException('duplicate'), HttpStatus.CONFLICT, 'duplicate'],
   ])(
     'preserves HTTP error status and message',
@@ -37,6 +47,9 @@ describe('HttpExceptionFilter', () => {
       expect(json).toHaveBeenCalledWith(
         expect.objectContaining({ success: false, statusCode, message }),
       );
+      const body = json.mock.calls[0][0] as { statusCode: number };
+      expect(Number.isInteger(body.statusCode)).toBe(true);
+      expect(body.statusCode).toBe(status.mock.calls[0][0]);
     },
   );
 

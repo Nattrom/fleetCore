@@ -30,8 +30,15 @@ describe('RolesGuard', () => {
 
   it('denies users without a matching role', () => {
     const { guard, context } = makeGuard([UserRole.ADMIN], {
-      role: UserRole.MANAGER,
+      role: UserRole.TECHNICIAN,
     });
     expect(guard.canActivate(context)).toBe(false);
+  });
+
+  it('supports only administrator and technician roles', () => {
+    expect(UserRole).toEqual({
+      ADMIN: 'ADMIN',
+      TECHNICIAN: 'TECHNICIAN',
+    });
   });
 });

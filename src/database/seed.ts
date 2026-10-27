@@ -1,4 +1,3 @@
-import * as argon2 from 'argon2';
 import { AppDataSource } from './data-source.js';
 import { User } from '../users/entities/user.entity.js';
 import { Mechanic } from '../mechanics/entities/mechanic.entity.js';
@@ -11,6 +10,9 @@ import {
   UserRole,
   VehicleStatus,
 } from '../common/enums/index.js';
+import { PasswordHasherService } from '../common/security/password-hasher.service.js';
+
+const passwords = new PasswordHasherService();
 
 const demoUsers = [
   {
@@ -31,12 +33,6 @@ const demoUsers = [
     password: 'FleetCoreTech!2026',
     role: UserRole.TECHNICIAN,
   },
-  {
-    name: 'Morgan Manager',
-    email: 'manager@fleetcore.local',
-    password: 'FleetCoreManager!2026',
-    role: UserRole.MANAGER,
-  },
 ] as const;
 
 async function seed(): Promise<void> {
@@ -55,7 +51,7 @@ async function seed(): Promise<void> {
         user = users.create({
           name: data.name,
           email: data.email,
-          passwordHash: await argon2.hash(data.password),
+          passwordHash: await passwords.hash(data.password),
           role: data.role,
           isActive: true,
         });

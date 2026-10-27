@@ -14,6 +14,7 @@ import { rateLimit } from 'express-rate-limit';
 import { AuditModule } from '../audit/audit.module.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
+import { PasswordModule } from '../common/security/password.module.js';
 import { Mechanic } from '../mechanics/entities/mechanic.entity.js';
 import { User } from '../users/entities/user.entity.js';
 import { UsersModule } from '../users/users.module.js';
@@ -43,6 +44,7 @@ const createAuthRateLimit = () =>
     ConfigModule,
     UsersModule,
     AuditModule,
+    PasswordModule,
     TypeOrmModule.forFeature([User, Mechanic]),
     PassportModule,
     JwtModule.registerAsync({
