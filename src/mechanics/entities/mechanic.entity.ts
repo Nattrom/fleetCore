@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, JoinColumn, OneToOne } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import type { Relation } from 'typeorm';
 import { Maintenance } from '../../maintenances/entities/maintenance.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 
@@ -7,31 +17,31 @@ export class Mechanic {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id', nullable: true })
-  userId: string;
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
+  userId: string | null;
 
   @OneToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: Relation<User>;
 
-  @Column()
+  @Column({ type: 'varchar', length: 160 })
   name: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 320 })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 160 })
   specialty: string;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
   @OneToMany(() => Maintenance, (maintenance) => maintenance.mechanic)
-  maintenances: Maintenance[];
+  maintenances: Relation<Maintenance[]>;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
 }

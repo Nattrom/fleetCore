@@ -23,7 +23,9 @@ export class AuthService {
     private readonly audit: AuditService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<{ id: string; name: string; email: string; role: UserRole }> {
+  async register(
+    dto: RegisterDto,
+  ): Promise<{ id: string; name: string; email: string; role: UserRole }> {
     const email = dto.email.trim().toLowerCase();
     if (await this.users.findByEmail(email)) {
       throw new ConflictException('El correo ya está registrado');
@@ -38,7 +40,11 @@ export class AuthService {
         role: UserRole.TECHNICIAN,
       });
     } catch (error) {
-      if (error instanceof QueryFailedError && (error as { driverError?: { code?: string } }).driverError?.code === '23505') {
+      if (
+        error instanceof QueryFailedError &&
+        (error as { driverError?: { code?: string } }).driverError?.code ===
+          '23505'
+      ) {
         throw new ConflictException('El correo ya está registrado');
       }
       throw error;
@@ -58,11 +64,16 @@ export class AuthService {
     user: { id: string; name: string; email: string; role: UserRole };
   }> {
     const user = await this.users.findByEmail(dto.email);
-    if (!user?.isActive || !(await argon2.verify(user.passwordHash, dto.password))) {
+    if (
+      !user?.isActive ||
+      !(await argon2.verify(user.passwordHash, dto.password))
+    ) {
       throw new UnauthorizedException('Correo o contraseña incorrectos');
     }
 
-    const expiresIn = this.config.getOrThrow<string>('jwt.expiresIn') as JwtSignOptions['expiresIn'];
+    const expiresIn = this.config.getOrThrow<string>(
+      'jwt.expiresIn',
+    ) as JwtSignOptions['expiresIn'];
     const accessToken = await this.jwt.signAsync(
       { sub: user.id },
       { expiresIn },

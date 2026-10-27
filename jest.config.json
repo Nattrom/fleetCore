@@ -4,14 +4,20 @@
   "rootDir": "src",
   "testRegex": ".*\\.spec\\.ts$",
   "transform": {
-    "^.+\\.ts$": ["ts-jest", {"useESM": true}]
+    "^.+\\.ts$": ["ts-jest", { "useESM": true }]
   },
   "moduleNameMapper": {
     "^(\\.{1,2}/.*)\\.js$": "$1"
   },
-  "collectCoverageFrom": [
-    "**/*.(t|j)s"
-  ],
+  "collectCoverageFrom": ["**/*.ts", "!**/*.spec.ts"],
   "coverageDirectory": "../coverage",
+  "coverageThreshold": {
+    "global": {
+      "statements": 40,
+      "branches": 35,
+      "functions": 35,
+      "lines": 40
+    }
+  },
   "testEnvironment": "node"
 }

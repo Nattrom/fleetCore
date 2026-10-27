@@ -17,7 +17,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     config: ConfigService,
     @InjectRepository(User) private readonly users: Repository<User>,
-    @InjectRepository(Mechanic) private readonly mechanics: Repository<Mechanic>,
+    @InjectRepository(Mechanic)
+    private readonly mechanics: Repository<Mechanic>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
