@@ -12,24 +12,29 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 160 })
   name: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', length: 320, unique: true })
   email: string;
 
-  @Column({ name: 'password_hash' })
+  @Column({ name: 'password_hash', type: 'varchar', length: 255 })
   passwordHash: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.TECHNICIAN })
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    enumName: 'user_role_enum',
+    default: UserRole.TECHNICIAN,
+  })
   role: UserRole;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
 }

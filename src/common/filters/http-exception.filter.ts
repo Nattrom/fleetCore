@@ -39,7 +39,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     });
   }
 
-  private getError(exception: unknown): { statusCode: number; message: string } {
+  private getError(exception: unknown): {
+    statusCode: number;
+    message: string;
+  } {
     if (exception instanceof HttpException) {
       const statusCode = exception.getStatus();
       const body = exception.getResponse();
@@ -58,13 +61,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (exception instanceof QueryFailedError) {
       const code = (exception as DatabaseError).driverError?.code;
       if (code === '23505' || code === '23P01') {
-        return { statusCode: HttpStatus.CONFLICT, message: 'El recurso entra en conflicto con datos existentes' };
+        return {
+          statusCode: HttpStatus.CONFLICT,
+          message: 'El recurso entra en conflicto con datos existentes',
+        };
       }
       if (code === '23503') {
-        return { statusCode: HttpStatus.CONFLICT, message: 'El recurso relacionado no existe o está en uso' };
+        return {
+          statusCode: HttpStatus.CONFLICT,
+          message: 'El recurso relacionado no existe o está en uso',
+        };
       }
       if (code === '23514' || code === '22P02') {
-        return { statusCode: HttpStatus.BAD_REQUEST, message: 'Los datos no cumplen las restricciones requeridas' };
+        return {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Los datos no cumplen las restricciones requeridas',
+        };
       }
     }
 

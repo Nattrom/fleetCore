@@ -43,7 +43,9 @@ describe('AuthService', () => {
     expect(created.email).toBe('alex@example.com');
     expect(created.name).toBe('Alex Morgan');
     expect(created.passwordHash).not.toBe('a-strong-password');
-    expect(await argon2.verify(created.passwordHash!, 'a-strong-password')).toBe(true);
+    expect(
+      await argon2.verify(created.passwordHash!, 'a-strong-password'),
+    ).toBe(true);
     expect(created.role).toBe(UserRole.TECHNICIAN);
     expect(result).not.toHaveProperty('passwordHash');
   });
@@ -94,8 +96,27 @@ describe('AuthService', () => {
     } as User);
 
     await expect(
-      service.login({ email: 'alex@example.com', password: 'a-strong-password' }),
+      service.login({
+        email: 'alex@example.com',
+        password: 'a-strong-password',
+      }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
     expect(jwt.signAsync).not.toHaveBeenCalled();
+  });
+
+  it('returns the authenticated user profile without credentials', () => {
+    expect(
+      service.profile({
+        id: 'user-id',
+        name: 'Alex Morgan',
+        email: 'alex@example.com',
+        role: UserRole.MANAGER,
+      }),
+    ).toEqual({
+      id: 'user-id',
+      name: 'Alex Morgan',
+      email: 'alex@example.com',
+      role: UserRole.MANAGER,
+    });
   });
 });

@@ -22,14 +22,16 @@ export class AuditService {
 
   async record(entry: AuditEntry, manager?: EntityManager): Promise<void> {
     const repository = manager?.getRepository(AuditLog) ?? this.auditRepository;
-    await repository.save(repository.create({
-      userId: entry.userId ?? null,
-      action: entry.action,
-      entity: entry.entity,
-      entityId: entry.entityId ?? null,
-      details: entry.details ?? null,
-      ip: entry.ip ?? null,
-      userAgent: entry.userAgent?.slice(0, 500) ?? null,
-    }));
+    await repository.save(
+      repository.create({
+        userId: entry.userId ?? null,
+        action: entry.action,
+        entity: entry.entity,
+        entityId: entry.entityId ?? null,
+        details: entry.details ?? null,
+        ip: entry.ip ?? null,
+        userAgent: entry.userAgent?.slice(0, 500) ?? null,
+      }),
+    );
   }
 }

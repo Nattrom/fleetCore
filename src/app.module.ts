@@ -16,6 +16,11 @@ import { AuthModule } from './auth/auth.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
 import { AuditModule } from './audit/audit.module.js';
+import { VehiclesModule } from './vehicles/vehicles.module.js';
+import { MechanicsModule } from './mechanics/mechanics.module.js';
+import { WorkshopsModule } from './workshops/workshops.module.js';
+import { IntegrationsModule } from './integrations/integrations.module.js';
+import { MaintenancesModule } from './maintenances/maintenances.module.js';
 
 @Module({
   imports: [
@@ -40,6 +45,11 @@ import { AuditModule } from './audit/audit.module.js';
     }),
     AuditModule,
     AuthModule,
+    VehiclesModule,
+    MechanicsModule,
+    WorkshopsModule,
+    IntegrationsModule,
+    MaintenancesModule,
   ],
   controllers: [AppController],
   providers: [
