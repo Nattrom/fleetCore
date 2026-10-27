@@ -1,36 +1,36 @@
-# Reglas de negocio
+# Business rules
 
-## Recursos
+## Resources
 
-- Correo y placa se recortan y normalizan antes de persistir.
-- Vehículos, mecánicos y talleres con historial se inactivan; no se borran físicamente.
-- No se permite disminuir el kilometraje del vehículo.
-- Los recursos inactivos no reciben asignaciones nuevas.
-- Un usuario vinculado a un mecánico debe estar activo y tener rol `TECHNICIAN`.
+- Email addresses and license plates are trimmed and normalized before persistence.
+- Vehicles, mechanics, and workshops with history are deactivated; they are not physically deleted.
+- Vehicle mileage cannot be decreased.
+- Inactive resources cannot receive new assignments.
+- A user linked to a mechanic must be active and have the `TECHNICIAN` role.
 
-## Asignación
+## Assignment
 
-Una nueva intervención verifica en una transacción que vehículo, mecánico y taller existen y están activos; además valida el kilometraje inicial, la agenda y la ausencia de otras asignaciones incompatibles.
+A new maintenance operation verifies within a transaction that the vehicle, mechanic, and workshop exist and are active; it also validates the initial mileage, schedule, and absence of other incompatible assignments.
 
-La agenda excluye el extremo final: dos intervalos que se tocan sin solaparse son válidos. La exclusión GiST y el índice único parcial protegen estas reglas frente a solicitudes concurrentes. Los bloqueos de fila serializan asignaciones y cambios de disponibilidad.
+The schedule excludes the end boundary: two intervals that touch without overlapping are valid. The GiST exclusion constraint and partial unique index protect these rules against concurrent requests. Row locks serialize assignments and availability changes.
 
-Toda intervención comienza en `SCHEDULED`; el cliente no envía el estado inicial.
+Every maintenance operation starts in `SCHEDULED`; the client does not send the initial status.
 
-## Estados
+## Statuses
 
-| Estado actual | Siguiente estado válido    |
+| Current status | Next valid status        |
 | ------------- | -------------------------- |
 | `SCHEDULED`   | `IN_PROGRESS`, `CANCELLED` |
 | `IN_PROGRESS` | `COMPLETED`, `CANCELLED`   |
-| `COMPLETED`   | Ninguno                    |
-| `CANCELLED`   | Ninguno                    |
+| `COMPLETED`   | None                       |
+| `CANCELLED`   | None                       |
 
-Completar requiere `workPerformed`, `cost` no negativo, `finishedAt` y `finalMileage`. El kilometraje final no puede ser menor que el de la intervención o el vehículo. El cierre actualiza mantenimiento, vehículo y auditoría en una única transacción.
+Completion requires `workPerformed`, a non-negative `cost`, `finishedAt`, and `finalMileage`. Final mileage cannot be less than the mileage recorded for the maintenance operation or the vehicle. Closing updates the maintenance record, vehicle, and audit log in a single transaction.
 
-Al comenzar una intervención, el vehículo pasa a `IN_MAINTENANCE`. Al completarla o cancelarla, su disponibilidad se recalcula según las intervenciones activas; nunca se reactiva automáticamente un vehículo `INACTIVE`.
+When a maintenance operation begins, the vehicle status changes to `IN_MAINTENANCE`. When it is completed or cancelled, availability is recalculated based on active maintenance operations; an `INACTIVE` vehicle is never automatically reactivated.
 
-## Permisos
+## Permissions
 
-- `ADMIN`: administra recursos, usuarios y mantenimientos.
-- `TECHNICIAN`: consulta y modifica únicamente mantenimientos asignados a su identidad; solo puede efectuar transiciones válidas.
-- Integraciones: acceso independiente mediante `x-api-key`.
+- `ADMIN`: manages resources, users, and maintenance operations.
+- `TECHNICIAN`: views and modifies only maintenance operations assigned to their identity; they can only perform valid transitions.
+- Integrations: independent access via `x-api-key`.

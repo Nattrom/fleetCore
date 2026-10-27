@@ -20,7 +20,7 @@ export function assertMaintenanceTransition(
 ): void {
   if (!transitions[current].includes(next)) {
     throw new BadRequestException(
-      `No se permite cambiar el mantenimiento de ${current} a ${next}`,
+      `Changing maintenance from ${current} to ${next} is not allowed`,
     );
   }
 }

@@ -27,7 +27,7 @@ export class IntegrationsService {
         status: true,
       },
     });
-    if (!vehicle) throw new NotFoundException('Vehículo no encontrado');
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
 
     const [records, total] = await this.maintenances.findAndCount({
       where: { vehicleId: id },

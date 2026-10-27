@@ -22,7 +22,7 @@ export class ApiKeyGuard implements CanActivate {
       .header('x-api-key');
     const allowed = this.config.get<string[]>('apiKeys') ?? [];
     if (!provided || allowed.length === 0) {
-      throw new UnauthorizedException('API Key inválida');
+      throw new UnauthorizedException('Invalid API key');
     }
 
     const valid = allowed.some((key) => {
@@ -34,7 +34,7 @@ export class ApiKeyGuard implements CanActivate {
       );
     });
     if (!valid) {
-      throw new UnauthorizedException('API Key inválida');
+      throw new UnauthorizedException('Invalid API key');
     }
     return true;
   }

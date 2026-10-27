@@ -8,7 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.js';
@@ -25,24 +25,28 @@ export class VehiclesController {
   constructor(private readonly vehicles: VehiclesService) {}
 
   @Get('plate/:plate')
+  @ApiOperation({ summary: 'Get a vehicle by plate (ADMIN)' })
   @Roles(UserRole.ADMIN)
   getByPlate(@Param('plate') plate: string) {
     return this.vehicles.getByPlate(plate);
   }
 
   @Get()
+  @ApiOperation({ summary: 'List vehicles with filters (ADMIN)' })
   @Roles(UserRole.ADMIN)
   list(@Query() query: ListVehiclesDto) {
     return this.vehicles.list(query);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a vehicle by id (ADMIN)' })
   @Roles(UserRole.ADMIN)
   get(@Param('id', ParseUUIDPipe) id: string) {
     return this.vehicles.get(id);
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a vehicle (ADMIN)' })
   @Roles(UserRole.ADMIN)
   create(
     @Body() dto: CreateVehicleDto,
@@ -52,6 +56,7 @@ export class VehiclesController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a vehicle (ADMIN)' })
   @Roles(UserRole.ADMIN)
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -62,6 +67,7 @@ export class VehiclesController {
   }
 
   @Post(':id/deactivate')
+  @ApiOperation({ summary: 'Deactivate a vehicle (ADMIN)' })
   @Roles(UserRole.ADMIN)
   deactivate(
     @Param('id', ParseUUIDPipe) id: string,

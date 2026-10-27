@@ -47,4 +47,29 @@ describe('PasswordHasherService', () => {
       service.verifyAndUpgrade(legacyHash, 'incorrect-password'),
     ).resolves.toEqual({ valid: false });
   });
+
+  it('fails safely for a malformed Argon2 hash', async () => {
+    await expect(
+      service.verifyAndUpgrade('$argon2id$corrupted-hash', 'any-password'),
+    ).resolves.toEqual({ valid: false });
+  });
+
+  it('fails safely for a malformed bcrypt hash', async () => {
+    await expect(
+      service.verifyAndUpgrade(
+        '$2b$12$not-a-valid-bcrypt-hash',
+        'any-password',
+      ),
+    ).resolves.toEqual({ valid: false });
+  });
+
+  it('rejects unknown hash formats without throwing', async () => {
+    await expect(
+      service.verifyAndUpgrade('plain-text', 'plain-text'),
+    ).resolves.toEqual({ valid: false });
+  });
+
+  it('performs a dummy verification without throwing', async () => {
+    await expect(service.verifyDummy('any-password')).resolves.toBeUndefined();
+  });
 });

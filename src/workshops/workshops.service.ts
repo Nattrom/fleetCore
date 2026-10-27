@@ -37,7 +37,7 @@ export class WorkshopsService {
 
   async get(id: string): Promise<Workshop> {
     const workshop = await this.workshops.findOne({ where: { id } });
-    if (!workshop) throw new NotFoundException('Taller no encontrado');
+    if (!workshop) throw new NotFoundException('Workshop not found');
     return workshop;
   }
 
@@ -87,7 +87,7 @@ export class WorkshopsService {
         where: { id },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!workshop) throw new NotFoundException('Taller no encontrado');
+      if (!workshop) throw new NotFoundException('Workshop not found');
       if (
         !active &&
         (await manager.getRepository(Maintenance).exists({
@@ -101,7 +101,7 @@ export class WorkshopsService {
         }))
       ) {
         throw new ConflictException(
-          'No se puede inactivar un taller con mantenimientos activos',
+          'A workshop with active maintenance cannot be deactivated',
         );
       }
       workshop.isActive = active;

@@ -8,7 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
@@ -25,18 +25,21 @@ export class MechanicsController {
   constructor(private readonly mechanics: MechanicsService) {}
 
   @Get()
+  @ApiOperation({ summary: 'List mechanics with filters (ADMIN)' })
   @Roles(UserRole.ADMIN)
   list(@Query() query: ListMechanicsDto) {
     return this.mechanics.list(query);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a mechanic by id (ADMIN)' })
   @Roles(UserRole.ADMIN)
   get(@Param('id', ParseUUIDPipe) id: string) {
     return this.mechanics.get(id);
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a mechanic (ADMIN)' })
   @Roles(UserRole.ADMIN)
   create(
     @Body() dto: CreateMechanicDto,
@@ -46,6 +49,7 @@ export class MechanicsController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a mechanic (ADMIN)' })
   @Roles(UserRole.ADMIN)
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -56,6 +60,7 @@ export class MechanicsController {
   }
 
   @Post(':id/activate')
+  @ApiOperation({ summary: 'Activate a mechanic (ADMIN)' })
   @Roles(UserRole.ADMIN)
   activate(
     @Param('id', ParseUUIDPipe) id: string,
@@ -65,6 +70,7 @@ export class MechanicsController {
   }
 
   @Post(':id/deactivate')
+  @ApiOperation({ summary: 'Deactivate a mechanic (ADMIN)' })
   @Roles(UserRole.ADMIN)
   deactivate(
     @Param('id', ParseUUIDPipe) id: string,

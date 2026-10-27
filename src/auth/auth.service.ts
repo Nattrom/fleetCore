@@ -29,7 +29,7 @@ export class AuthService {
   ): Promise<{ id: string; name: string; email: string; role: UserRole }> {
     const email = dto.email.trim().toLowerCase();
     if (await this.users.findByEmail(email)) {
-      throw new ConflictException('El correo ya está registrado');
+      throw new ConflictException('Email is already registered');
     }
 
     let user: User;
@@ -46,7 +46,7 @@ export class AuthService {
         (error as { driverError?: { code?: string } }).driverError?.code ===
           '23505'
       ) {
-        throw new ConflictException('El correo ya está registrado');
+        throw new ConflictException('Email is already registered');
       }
       throw error;
     }
@@ -66,14 +66,15 @@ export class AuthService {
   }> {
     const user = await this.users.findByEmail(dto.email);
     if (!user?.isActive) {
-      throw new UnauthorizedException('Correo o contraseña incorrectos');
+      await this.passwords.verifyDummy(dto.password);
+      throw new UnauthorizedException('Incorrect email or password');
     }
     const verification = await this.passwords.verifyAndUpgrade(
       user.passwordHash,
       dto.password,
     );
     if (!verification.valid) {
-      throw new UnauthorizedException('Correo o contraseña incorrectos');
+      throw new UnauthorizedException('Incorrect email or password');
     }
     if (verification.replacementHash) {
       await this.users.updatePasswordHash(

@@ -1,38 +1,38 @@
 # FleetCore API
 
-API REST para administrar vehículos, mecánicos, talleres y mantenimientos de flota. La aplicación está construida con NestJS, TypeScript estricto, PostgreSQL y TypeORM.
+REST API for managing fleet vehicles, mechanics, workshops, and maintenance. The application is built with NestJS, strict TypeScript, PostgreSQL, and TypeORM.
 
-## Requisitos
+## Requirements
 
-- Node.js 22 LTS y npm.
-- PostgreSQL accesible en `localhost:5435` (o `127.0.0.1:5435`).
-- Docker Compose, opcional para ejecutar PostgreSQL y la API en contenedores.
+- Node.js 22 LTS and npm.
+- PostgreSQL accessible at `localhost:5435` (or `127.0.0.1:5435`).
+- Docker Compose, optional for running PostgreSQL and the API in containers.
 
-La configuración local solicitada es:
+The requested local configuration is:
 
-| Parámetro     | Valor       |
+| Parameter     | Value       |
 | ------------- | ----------- |
 | Host          | `localhost` |
-| Puerto        | `5435`      |
-| Usuario       | `postgres`  |
-| Contraseña    | `postgres`  |
-| Base de datos | `fleetcore` |
+| Port          | `5435`      |
+| Username      | `postgres`  |
+| Password      | `postgres`  |
+| Database      | `fleetcore` |
 
-No se utiliza el servicio PostgreSQL del puerto `5432` para la ejecución local.
+The PostgreSQL service on port `5432` is not used for local execution.
 
-## Instalación y configuración
+## Installation and configuration
 
 ```bash
 npm ci
 ```
 
-Si todavía no existe `.env`, copia `.env.example` y revisa sus valores. **No sobrescribas un `.env` existente**, porque puede contener configuración local.
+If `.env` does not exist yet, copy `.env.example` and review its values. **Do not overwrite an existing `.env`**, as it may contain local configuration.
 
 ```bash
 cp .env.example .env
 ```
 
-Configura como mínimo `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET` y `API_KEYS`. El archivo `.env` está excluido de Git.
+Configure at least `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, and `API_KEYS`. The `.env` file is excluded from Git.
 
 ```bash
 npm run migration:run
@@ -40,60 +40,60 @@ npm run seed
 npm run start:dev
 ```
 
-La API queda disponible en `http://localhost:3000`. Las migraciones desactivan `synchronize` y son el único mecanismo para modificar el esquema.
+The API is available at `http://localhost:3000`. Migrations disable `synchronize` and are the only mechanism for modifying the schema.
 
-## Comandos
+## Commands
 
-| Comando                                                        | Propósito                                            |
+| Command                                                        | Purpose                                              |
 | -------------------------------------------------------------- | ---------------------------------------------------- |
-| `npm run start:dev`                                            | Desarrollo con recarga                               |
-| `npm run build`                                                | Compilación de producción                            |
-| `npm run start:prod`                                           | Ejecutar `dist/main.js`                              |
-| `npm run migration:show`                                       | Ver migraciones pendientes/aplicadas                 |
-| `npm run migration:run`                                        | Compilar y aplicar migraciones                       |
-| `npm run migration:revert`                                     | Revertir la última migración                         |
-| `npm run migration:create -- src/database/migrations/Nombre`   | Crear una migración vacía                            |
-| `npm run migration:generate -- src/database/migrations/Nombre` | Generar una migración comparando entidades y esquema |
-| `npm run seed`                                                 | Cargar datos de demostración idempotentemente        |
-| `npm test -- --runInBand`                                      | Pruebas unitarias                                    |
-| `npm run test:watch`                                           | Pruebas en modo observación                          |
-| `npm run test:cov -- --runInBand`                              | Pruebas y umbral de cobertura                        |
-| `npm run test:e2e -- --runInBand`                              | Migrar, sembrar y ejecutar e2e en `fleetcore_test`   |
+| `npm run start:dev`                                            | Development with hot reload                          |
+| `npm run build`                                                | Production build                                      |
+| `npm run start:prod`                                           | Run `dist/main.js`                                    |
+| `npm run migration:show`                                       | Show pending/applied migrations                      |
+| `npm run migration:run`                                        | Compile and run migrations                           |
+| `npm run migration:revert`                                     | Revert the latest migration                          |
+| `npm run migration:create -- src/database/migrations/Name`     | Create an empty migration                            |
+| `npm run migration:generate -- src/database/migrations/Name`   | Generate a migration by comparing entities and schema |
+| `npm run seed`                                                 | Idempotently load demo data                          |
+| `npm test -- --runInBand`                                      | Unit tests                                           |
+| `npm run test:watch`                                           | Watch tests                                          |
+| `npm run test:cov -- --runInBand`                              | Tests and coverage threshold                         |
+| `npm run test:e2e -- --runInBand`                              | Migrate, seed, and run e2e tests in `fleetcore_test`  |
 | `npm run lint`                                                 | ESLint                                               |
-| `npx prettier --check "src/**/*.ts" "test/**/*.ts"`            | Verificar formato                                    |
+| `npx prettier --check "src/**/*.ts" "test/**/*.ts"`            | Check formatting                                    |
 
-Para crear el esquema antes de ejecutar las pruebas e2e, crea una base separada:
+To create the schema before running e2e tests, create a separate database:
 
 ```bash
 PGPASSWORD=postgres createdb -h 127.0.0.1 -p 5435 -U postgres fleetcore_test
 ```
 
-El comando e2e **solo** apunta a `fleetcore_test`; nunca elimina datos y no ejecuta pruebas destructivas contra `fleetcore`.
+The e2e command **only** targets `fleetcore_test`; it never deletes data and does not run destructive tests against `fleetcore`.
 
 ## Swagger
 
-La especificación OpenAPI está en [`http://localhost:3000/api/docs`](http://localhost:3000/api/docs). Incluye esquemas de DTO, autenticación Bearer y `x-api-key`.
+The OpenAPI specification is at [`http://localhost:3000/api/docs`](http://localhost:3000/api/docs). It includes DTO schemas and `x-api-key` authentication.
 
-## Autenticación, roles y respuestas
+## Authentication, roles, and responses
 
-- `POST /auth/register`: registro público, siempre crea rol `TECHNICIAN`.
-- `POST /auth/login`: verifica bcrypt (y migra hashes Argon2 heredados) y devuelve JWT.
-- `GET /auth/profile`: perfil del JWT validado contra el usuario activo en PostgreSQL.
-- Roles admitidos: `ADMIN` y `TECHNICIAN`.
-- Integraciones: `x-api-key` configurada en `API_KEYS`.
-- Las respuestas exitosas usan `{ success, statusCode, data, timestamp }`; los errores incluyen `{ success:false, statusCode, message, path, timestamp }`.
+- `POST /auth/register`: public registration; always creates the `TECHNICIAN` role.
+- `POST /auth/login`: verifies bcrypt (and migrates legacy Argon2 hashes) and returns a JWT.
+- `GET /auth/profile`: JWT profile validated against the active user in PostgreSQL.
+- Supported roles: `ADMIN` and `TECHNICIAN`.
+- Integrations: `x-api-key` configured in `API_KEYS`.
+- Successful responses use `{ success, statusCode, data, timestamp }`; errors include `{ success:false, statusCode, message, path, timestamp }`.
 
-Los usuarios y claves de demostración son exclusivamente para desarrollo:
+Demo users and passwords are for development only:
 
-| Rol           | Usuario                 | Contraseña            |
+| Role          | Username                | Password              |
 | ------------- | ----------------------- | --------------------- |
-| Administrador | `admin@fleetcore.local` | `FleetCoreAdmin!2026` |
-| Técnico 1     | `tech1@fleetcore.local` | `FleetCoreTech!2026`  |
-| Técnico 2     | `tech2@fleetcore.local` | `FleetCoreTech!2026`  |
+| Administrator | `admin@fleetcore.local` | `FleetCoreAdmin!2026` |
+| Technician 1  | `tech1@fleetcore.local` | `FleetCoreTech!2026`  |
+| Technician 2  | `tech2@fleetcore.local` | `FleetCoreTech!2026`  |
 
-Las claves API de muestra son `demo-key-partner-1` y `demo-key-partner-2`. Sustituye todos estos valores antes de desplegar. La configuración de producción rechaza el secreto JWT de ejemplo, CORS `*` y API Keys que empiecen por `demo-`.
+The sample API keys are `demo-key-partner-1` and `demo-key-partner-2`. Replace all these values before deployment. The production configuration rejects the sample JWT secret, CORS `*`, and API keys beginning with `demo-`.
 
-Las contraseñas nuevas usan bcrypt con costo 12. Las contraseñas históricas Argon2 se verifican durante el inicio de sesión y se convierten a bcrypt tras una autenticación correcta, sin invalidarlas. Tras migrar todos los hashes Argon2 y comprobar que no quedan usuarios pendientes, se podrá retirar la compatibilidad Argon2 y su dependencia.
+New passwords use bcrypt with cost 12. Legacy Argon2 passwords are verified during login and converted to bcrypt after successful authentication without invalidating them. After all Argon2 hashes have been migrated and no users remain pending, Argon2 compatibility and its dependency can be removed.
 
 ## Docker Compose
 
@@ -103,32 +103,32 @@ docker compose logs -f api
 docker compose down
 ```
 
-Compose crea un PostgreSQL persistente y una API; la API ejecuta migraciones antes de iniciar. El servicio de base de datos se publica por defecto en el puerto host `5435`. Si ese puerto ya lo ocupa una base local, configura `POSTGRES_HOST_PORT=5436` en `.env` antes de iniciar Compose. Dentro de Docker la API usa el host `postgres` y el puerto `5432` del contenedor; la configuración nativa sigue usando `localhost:5435`.
+Compose creates a persistent PostgreSQL instance and an API; the API runs migrations before starting. The database service is published on host port `5435` by default. If that port is already in use by a local database, set `POSTGRES_HOST_PORT=5436` in `.env` before starting Compose. Within Docker, the API uses host `postgres` and container port `5432`; native configuration continues to use `localhost:5435`.
 
-## Dump y restauración
+## Dump and restore
 
-Para incluir esquema, índices, restricciones y datos:
+To include the schema, indexes, constraints, and data:
 
 ```bash
 PGPASSWORD=postgres pg_dump -h 127.0.0.1 -p 5435 -U postgres \
   -d fleetcore --format=custom --no-owner --file=fleetcore.dump
 ```
 
-Restauración en una base ya creada:
+Restore to an already-created database:
 
 ```bash
 PGPASSWORD=postgres pg_restore -h 127.0.0.1 -p 5435 -U postgres \
   -d fleetcore --no-owner fleetcore.dump
 ```
 
-Guarda los dumps y credenciales fuera del repositorio. Usa las credenciales reales del entorno cuando no sea desarrollo.
+Store dumps and credentials outside the repository. Use the actual environment credentials outside development.
 
-## Documentación
+## Documentation
 
-- [Arquitectura](docs/architecture.md)
-- [Base de datos](docs/database.md)
-- [API y permisos](docs/api.md)
-- [Reglas de negocio](docs/business-rules.md)
-- [Seguridad](docs/security.md)
-- [Pruebas](docs/testing.md)
-- [Operación y solución de problemas](docs/maintenance.md)
+- [Architecture](docs/architecture.md)
+- [Database](docs/database.md)
+- [API and permissions](docs/api.md)
+- [Business rules](docs/business-rules.md)
+- [Security](docs/security.md)
+- [Testing](docs/testing.md)
+- [Operations and troubleshooting](docs/maintenance.md)
